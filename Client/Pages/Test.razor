@@ -1,0 +1,31 @@
+﻿@page "/Test"
+
+
+@* <DForm Model="typeCustom" OnSubmit="OnSubmit"></DForm> *@
+@* <DSchedule></DSchedule> *@
+
+@code {
+    public TypeCustom typeCustom { get; set; }
+    protected override void OnInitialized(){
+        typeCustom = new();
+        typeCustom.Name = "Davis";
+        typeCustom.DateOfBorn = DateTime.Now;
+        typeCustom.Nazione = new() { "Italia", "Francia", "Brasile" };
+    }
+
+    void OnSubmit()
+    {
+
+    }
+
+
+    public class TypeCustom
+    {
+        public int Age { get; set; }
+        public DateTime DateOfBorn { get; set; }
+        public string Name { get; set; }
+        public Stream Image { get; set; }
+        public List<string> Nazione { get; set; }
+
+    }
+}

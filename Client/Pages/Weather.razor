@@ -1,0 +1,79 @@
+﻿@page "/weather"
+@using Microsoft.AspNetCore.Authorization 
+@using System.Net.Http.Headers
+@inject ILocalStorageService localStorageService
+@inject HttpClient Http
+@inject AuthenticationStateProvider authenticationStateProvider
+@attribute [Authorize(Roles = "admin")] 
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>@Loading</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+    private string Loading = "Loading...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            AuthenticationState auth = await authenticationStateProvider.GetAuthenticationStateAsync();
+            if(auth.User.Identity.IsAuthenticated)
+            {
+                string savedToken = await localStorageService.GetItemAsync<string>("bearerToken");
+                Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", savedToken);
+                string url = "http://localhost:5006/weatherforecast";
+                forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>(url);
+            }
+         
+        }
+        catch
+        {
+            Loading = "Non sei autorizzato a vedere il contenuto";
+            StateHasChanged();
+        }
+      
+    }
+
+    public class WeatherForecast
+    {
+        public DateOnly Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string? Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+}
